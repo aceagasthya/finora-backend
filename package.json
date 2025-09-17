@@ -1,0 +1,10 @@
+{
+  "name": "finora-bitgo-express",
+  "version": "1.0.0",
+  "scripts": {
+    "start": "bitgo-express --port 3080 --env test --bind 0.0.0.0 --debug"
+  },
+  "dependencies": {
+    "bitgo": "stable"
+  }
+}
