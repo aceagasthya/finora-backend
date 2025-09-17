@@ -19,11 +19,11 @@ logger = logging.getLogger("finora")
 # HMAC verification secret for webhooks
 HMAC_SECRET = os.environ.get("WEBHOOK_HMAC_SECRET", "").strip()
 
-# BitGo configuration
+# BitGo configuration - UPDATED TO USE YOUR EXPRESS SERVICE
 BITGO_ACCESS_TOKEN = os.environ.get("BITGO_ACCESS_TOKEN")
 BITGO_WALLET_ID = os.environ.get("BITGO_WALLET_ID")
 BITGO_WALLET_PASSPHRASE = os.environ.get("BITGO_WALLET_PASSPHRASE")
-BITGO_BASE_URL = "https://app.bitgo-test.com"  # Testnet
+BITGO_EXPRESS_URL = "https://finora-bitgo-express-1.onrender.com"  # ← YOUR EXPRESS SERVICE
 
 def verify_hmac_sha256(raw_body: bytes, received_sig: str) -> bool:
     """Verify webhook HMAC signature"""
@@ -45,7 +45,7 @@ def home():
 def health():
     return {"status": "ok", "time": datetime.now(timezone.utc).isoformat()}, 200
 
-# Send TBTC endpoint
+# Send TBTC endpoint - UPDATED TO USE BITGO EXPRESS
 @app.route("/api/send-tbtc", methods=["POST"])
 def send_tbtc():
     try:
@@ -58,7 +58,8 @@ def send_tbtc():
         if not address or not amount:
             return jsonify({"error": "Address and amount are required"}), 400
 
-        bitgo_url = f"{BITGO_BASE_URL}/api/v2/tbtc/wallet/{BITGO_WALLET_ID}/sendcoins"
+        # UPDATED: Use your BitGo Express service
+        bitgo_url = f"{BITGO_EXPRESS_URL}/api/v2/tbtc/wallet/{BITGO_WALLET_ID}/sendcoins"
 
         payload = {
             "address": address,
@@ -77,14 +78,14 @@ def send_tbtc():
             logger.info(f"Transaction successful: {response.json()}")
             return jsonify(response.json()), 200
         else:
-            logger.error(f"BitGo API error: {response.status_code} - {response.text}")
+            logger.error(f"BitGo Express error: {response.status_code} - {response.text}")
             return jsonify({"error": "Transaction failed", "details": response.text}), response.status_code
 
     except Exception as e:
         logger.error(f"Send transaction error: {e}")
         return jsonify({"error": "Internal server error"}), 500
 
-# BitGo webhook endpoint
+# BitGo webhook endpoint - UNCHANGED (KEEP THIS AS IS)
 @app.route("/webhook/bitgo", methods=["POST"])
 def bitgo_webhook():
     ctype = request.headers.get("Content-Type", "")
